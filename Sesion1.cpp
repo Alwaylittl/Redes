@@ -8,6 +8,7 @@
 
 
 #include <stdio.h>
+#include <stdio_ext.h>
 #include <iostream>
 #include "linkLayer.h"
 
@@ -72,13 +73,31 @@ for(j = 0; j<5; j++){
 
 }
 
-void conseguirMAC (interface_t iface2, char *nombre){
+int OpenPort(interface_t &iface2){
+     //Abrimos el puerto
+  
+    int Puerto=OpenAdapter(&iface2);
+    if(Puerto != 0)
+    {
+        printf("Error al abrir el puerto\n");
+        getch();
+        return(1);
+    }
+    else
+        printf("Puerto abierto correctamente\n");
 
-setDeviceName(&iface2, nombre);//Devuelve la interfaz que se identifica con el nombre del dispositivo que hemos pasado por parámetro
-GetMACAdapter(&iface2);//Obtenemos la MAC de la interfaz
-imprimirMACR(iface2.MACaddr);//Imprimimos la MAC de la interfaz que pasamos por la parámetros
+    return 0;
+}
+
+void conseguirMAC (interface_t &iface2, char *nombre){
+
+    setDeviceName(&iface2, nombre);//Devuelve la interfaz que se identifica con el nombre del dispositivo que hemos pasado por parámetro
+    GetMACAdapter(&iface2);//Obtenemos la MAC de la interfaz
+    OpenPort(iface2); //Abrimos el puerto
+    __fpurge(stdin); 
 
 
+    imprimirMACR(iface2.MACaddr);//Imprimimos la MAC de la interfaz que pasamos por la parámetros
 }
 
 int main()
