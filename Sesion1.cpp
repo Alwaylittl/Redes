@@ -94,7 +94,7 @@ int OpenPort(interface_t &iface){
             return 0;
 }
 
-void EnviarCaracter(interface_t iface,char car,unsigned char mac_src,unsigned char mac_dst,unsigned char type){
+void EnviarCaracter(interface_t iface,char car,unsigned char mac_src[6],unsigned char mac_dst[6],unsigned char type[2], unsigned char *frame){
 
 }
 
@@ -104,11 +104,13 @@ int main()
   pcap_if_t *avail_ifaces=NULL;
   char *dispositivo = NULL;
 
-  char car = 'M';
+  unsigned char car = 'M';
+  unsigned char *payload = &car;
+  
   unsigned char mac_src[6]={0x00, 0x00, 0x00, 0x00,0x00, 0x00};
   unsigned char mac_dst[6]={0x00, 0x01, 0x02, 0x03,0x04, 0x05};
   unsigned char type[2]={0x30,0x00};
- 
+  unsigned char *frame; 
  
 
  printf("\n----------------------------\n");
@@ -128,7 +130,11 @@ printf ("Interfaz elegida: %s\n", dispositivo);
 conseguirMAC(iface, dispositivo);
 OpenPort(iface);
 __fpurge(stdin);
-EnviarCaracter(iface,car,mac_src, mac_dst,type);
+
+frame = BuildFrame(mac_src,mac_dst,type,payload); //Construimos la trama
+SendFrame(&iface,payload,4);
+CloseAdapter(&iface);
+
 
 imprimirMACR(iface.MACaddr);//Imprimimos la MAC de la interfaz que pasamos por la parámetros
 
