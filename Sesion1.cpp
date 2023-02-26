@@ -36,7 +36,7 @@ una opción (entre los dispositivos que se encuentran en nuestro PC los cuáles 
 anteriormente, van a estar enumerados del 0 al 7). Una vez que el usuario ha elegido la opción, este método 
 va a devolver el dispositivo que se identifica con la opción del 0 al 7 que hemos elegido.
 */
-char *  seleccionarInterfaz( pcap_if_t *avail_ifaces2){
+char *  seleccionarInterfaz( pcap_if_t *avail_ifaces){
 
 int opcion;
 char *dispositivo= NULL;
@@ -45,11 +45,11 @@ cin>>opcion;
 
 int i = 0;
 while(i != opcion){
-    avail_ifaces2 = avail_ifaces2->next;
+    avail_ifaces = avail_ifaces->next;
     i++;
 }
 
-dispositivo = avail_ifaces2->name;
+dispositivo = avail_ifaces->name;
 
 return dispositivo;
 
@@ -73,38 +73,41 @@ for(j = 0; j<5; j++){
 
 }
 
-int OpenPort(interface_t &iface2){
-     //Abrimos el puerto
-  
-    int Puerto=OpenAdapter(&iface2);
-    if(Puerto != 0)
-    {
-        printf("Error al abrir el puerto\n");
-        getch();
-        return(1);
-    }
-    else
-        printf("Puerto abierto correctamente\n");
 
-    return 0;
+void conseguirMAC (interface_t &iface, char *nombre){
+
+    setDeviceName(&iface, nombre);//Devuelve la interfaz que se identifica con el nombre del dispositivo que hemos pasado por parámetro
+    GetMACAdapter(&iface);//Obtenemos la MAC de la interfaz
+         
 }
 
-void conseguirMAC (interface_t &iface2, char *nombre){
+int OpenPort(interface_t &iface){
+    int Puerto=OpenAdapter(&iface);
+        if(Puerto != 0)
+        {
+            printf("Error al abrir el puerto\n");
+            getch();
+            return(1);
+        }
+        else
+            printf("Puerto abierto correctamente\n");
+            return 0;
+}
 
-    setDeviceName(&iface2, nombre);//Devuelve la interfaz que se identifica con el nombre del dispositivo que hemos pasado por parámetro
-    GetMACAdapter(&iface2);//Obtenemos la MAC de la interfaz
-    OpenPort(iface2); //Abrimos el puerto
-    __fpurge(stdin); 
+void EnviarCaracter(interface_t iface,char car,unsigned char mac_src,unsigned char mac_dst,unsigned char type){
 
-
-    imprimirMACR(iface2.MACaddr);//Imprimimos la MAC de la interfaz que pasamos por la parámetros
 }
 
 int main()
 {
- interface_t iface;
- pcap_if_t *avail_ifaces=NULL;
- char *dispositivo = NULL;
+  interface_t iface;
+  pcap_if_t *avail_ifaces=NULL;
+  char *dispositivo = NULL;
+
+  char car = 'M';
+  unsigned char mac_src[6]={0x00, 0x00, 0x00, 0x00,0x00, 0x00};
+  unsigned char mac_dst[6]={0x00, 0x01, 0x02, 0x03,0x04, 0x05};
+  unsigned char type[2]={0x30,0x00};
  
  
 
@@ -123,6 +126,11 @@ dispositivo = seleccionarInterfaz( avail_ifaces);
 
 printf ("Interfaz elegida: %s\n", dispositivo);
 conseguirMAC(iface, dispositivo);
+OpenPort(iface);
+__fpurge(stdin);
+EnviarCaracter(iface,car,mac_src, mac_dst,type);
+
+imprimirMACR(iface.MACaddr);//Imprimimos la MAC de la interfaz que pasamos por la parámetros
 
 
  return 0;
