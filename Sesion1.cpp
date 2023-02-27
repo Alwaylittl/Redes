@@ -104,8 +104,7 @@ int main()
   pcap_if_t *avail_ifaces=NULL;
   char *dispositivo = NULL;
 
-  unsigned char car = 'M';
-  unsigned char *payload = &car;
+  
   
   unsigned char mac_src[6]={0x00, 0x00, 0x00, 0x00,0x00, 0x00};
   unsigned char mac_dst[6]={0x00, 0x01, 0x02, 0x03,0x04, 0x05};
@@ -130,6 +129,11 @@ printf ("Interfaz elegida: %s\n", dispositivo);
 conseguirMAC(iface, dispositivo);
 OpenPort(iface);
 __fpurge(stdin);
+
+unsigned char car;
+cout<<"Seleccione un caracter: ";
+  cin>>car;
+  unsigned char *payload = &car;
 
 frame = BuildFrame(mac_src,mac_dst,type,payload); //Construimos la trama
 SendFrame(&iface,payload,4);
