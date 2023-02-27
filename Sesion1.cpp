@@ -94,10 +94,6 @@ int OpenPort(interface_t &iface){
             return 0;
 }
 
-void EnviarCaracter(interface_t iface,char car,unsigned char mac_src[6],unsigned char mac_dst[6],unsigned char type[2], unsigned char *frame){
-
-}
-
 int main()
 {
   interface_t iface;
@@ -130,15 +126,15 @@ conseguirMAC(iface, dispositivo);
 OpenPort(iface);
 __fpurge(stdin);
 
-unsigned char car;
+unsigned char *car = new unsigned char();
+
 cout<<"Seleccione un caracter: ";
   cin>>car;
-  unsigned char *payload = &car;
-  cout<<payload<<endl;
+  cout<<car<<endl;
 
-frame = BuildFrame(mac_src,mac_dst,type,payload); //Construimos la trama
-SendFrame(&iface,payload,1);
-CloseAdapter(&iface);
+frame = BuildFrame(mac_src,mac_dst,type,car); //Construimos la trama
+SendFrame(&iface,frame,1);
+FreeBuffer();
 
 
 imprimirMACR(iface.MACaddr);//Imprimimos la MAC de la interfaz que pasamos por la parámetros
