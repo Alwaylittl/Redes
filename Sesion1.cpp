@@ -134,9 +134,10 @@ unsigned char car;
 cout<<"Seleccione un caracter: ";
   cin>>car;
   unsigned char *payload = &car;
+  cout<<payload<<endl;
 
 frame = BuildFrame(mac_src,mac_dst,type,payload); //Construimos la trama
-SendFrame(&iface,payload,4);
+SendFrame(&iface,payload,1);
 CloseAdapter(&iface);
 
 
