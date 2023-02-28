@@ -94,6 +94,35 @@ int OpenPort(interface_t &iface){
             return 0;
 }
 
+void EnviarTrama(interface_t iface,unsigned char mac_src[6],unsigned char mac_dst[6],unsigned char type[2], unsigned char *car){
+    unsigned char *frame;
+    __fpurge(stdin);
+    
+    frame = BuildFrame(mac_src,mac_dst,type,car); //Construimos la trama
+    SendFrame(&iface,frame,1);
+    delete car;
+    free(frame);
+}
+
+unsigned char RecibirCaracter(interface_t iface){
+  
+   apacket_t trama ;    //Trama recibida
+    unsigned char datoR ;   //caracter recibido
+    trama = ReceiveFrame (&iface); 
+
+    if(trama.packet != NULL){
+    datoR = trama.packet[14];
+
+    }else{
+        return 0;
+    }
+
+    return datoR;
+
+}
+
+
+
 int main()
 {
   interface_t iface;
@@ -102,10 +131,10 @@ int main()
 
   
   
-  unsigned char mac_src[6]={0x00, 0x00, 0x00, 0x00,0x00, 0x00};
+  //unsigned char mac_src[6]={0x00, 0x00, 0x00, 0x00,0x00, 0x00};
   unsigned char mac_dst[6]={0x00, 0x01, 0x02, 0x03,0x04, 0x05};
   unsigned char type[2]={0x30,0x00};
-  unsigned char *frame; 
+   
  
 
  printf("\n----------------------------\n");
@@ -113,32 +142,36 @@ int main()
  printf("----------------------------\n");
 
 
+//Listado de Interfaces
 avail_ifaces=GetAvailAdapters(); 
-
 printf("Interfaces disponibles:\n");
 imprimirDispositivos ( avail_ifaces);
 
+//Seleccion de Interfaz
 printf("Seleccione Interfaz: ") ;
 dispositivo = seleccionarInterfaz( avail_ifaces);
-
 printf ("Interfaz elegida: %s\n", dispositivo);
+
+//Obtenemos la direccion MAC del dispositivo seleccionado
 conseguirMAC(iface, dispositivo);
+
+//Abrimos el puerto para poder enviar la trama
 OpenPort(iface);
-__fpurge(stdin);
 
+//Seleccionamos caracter a enviar
 unsigned char *car = new unsigned char();
+    cout<<"Seleccione un caracter: ";
+    cin>>car;
 
-cout<<"Seleccione un caracter: ";
-  cin>>car;
-  cout<<car<<endl;
+//Enviamos la trama con [MAC_src y MAC_dst] como parametros ademas del caracter a enviar
+EnviarTrama(iface,iface.MACaddr,mac_dst,type,car);
 
-frame = BuildFrame(mac_src,mac_dst,type,car); //Construimos la trama
-SendFrame(&iface,frame,1);
-FreeBuffer();
+//Recibimos la Trama
+unsigned char recibido = (char)RecibirCaracter(iface);
+printf("%c es el caracter recibido\n",recibido);
 
-
-imprimirMACR(iface.MACaddr);//Imprimimos la MAC de la interfaz que pasamos por la parámetros
-
+//Imprimimos la direccion MAC de la Intefaz seleccionada
+imprimirMACR(iface.MACaddr);
 
  return 0;
 }
