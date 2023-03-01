@@ -106,18 +106,21 @@ void EnviarTrama(interface_t iface,unsigned char mac_src[6],unsigned char mac_ds
 
 unsigned char RecibirCaracter(interface_t iface){
   
-   apacket_t trama ;    //Trama recibida
-    unsigned char datoR ;   //caracter recibido
-    trama = ReceiveFrame (&iface); 
+   apacket_t trama ;
+    unsigned char dato ;
+    trama = ReceiveFrame (&iface);
 
     if(trama.packet != NULL){
-    datoR = trama.packet[14];
+
+    dato = trama.packet[14];
+
 
     }else{
+
         return 0;
     }
 
-    return datoR;
+    return dato;
 
 }
 
@@ -131,7 +134,7 @@ int main()
 
   
   
-  //unsigned char mac_src[6]={0x00, 0x00, 0x00, 0x00,0x00, 0x00};
+  unsigned char mac_src[6]={0x00, 0x00, 0x00, 0x00,0x00, 0x00};
   unsigned char mac_dst[6]={0x00, 0x01, 0x02, 0x03,0x04, 0x05};
   unsigned char type[2]={0x30,0x00};
    
@@ -164,13 +167,13 @@ unsigned char *car = new unsigned char();
     cin>>car;
 
 //Enviamos la trama con [MAC_src y MAC_dst] como parametros ademas del caracter a enviar
-EnviarTrama(iface,iface.MACaddr,mac_dst,type,car);
+EnviarTrama(iface,mac_src,mac_dst,type,car);
 
-//Recibimos la Trama
-unsigned char recibido = (char)RecibirCaracter(iface);
+//Recibimos el caracter que nos han enviado
+char recibido = (char)RecibirCaracter(iface);
 printf("%c es el caracter recibido\n",recibido);
 
-//Imprimimos la direccion MAC de la Intefaz seleccionada
+//Imprimimos la MAC de la interfaz que pasamos por la parámetro
 imprimirMACR(iface.MACaddr);
 
  return 0;
