@@ -127,7 +127,7 @@ void Funcionalidad(interface_t *iface,unsigned char mac_src[6],unsigned char mac
    
             unsigned char car = 0;
             printf("Pulse los caracteres a enviar: \n");
-            __fpurge;
+            __fpurge(stdin);
             while (car != 27)
             {
                 
@@ -155,6 +155,7 @@ void Funcionalidad(interface_t *iface,unsigned char mac_src[6],unsigned char mac
                 }
                 
             }
+            CloseAdapter(iface);
 }
 
 }
