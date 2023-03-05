@@ -74,57 +74,90 @@ for(j = 0; j<5; j++){
 }
 
 
-void conseguirMAC (interface_t &iface, char *nombre){
+void conseguirMAC (interface_t *iface, char *nombre){
 
-    setDeviceName(&iface, nombre);//Devuelve la interfaz que se identifica con el nombre del dispositivo que hemos pasado por parámetro
-    GetMACAdapter(&iface);//Obtenemos la MAC de la interfaz
+    setDeviceName(iface, nombre);//Devuelve la interfaz que se identifica con el nombre del dispositivo que hemos pasado por parámetro
+    GetMACAdapter(iface);//Obtenemos la MAC de la interfaz
+    imprimirMACR(iface->MACaddr);//Imprimimos la MAC de la interfaz que pasamos por la parámetro
+    
          
 }
 
-int OpenPort(interface_t &iface){
-    int Puerto=OpenAdapter(&iface);
-        if(Puerto != 0)
+int OpenPort(interface_t *iface){
+
+        if(OpenAdapter(iface) == 0)
         {
-            printf("Error al abrir el puerto\n");
-            getch();
-            return(1);
+            printf("El puerto a sido abierto correctamente\n");
+            return 0;  
+        }else{
+            printf("El puerto NO a sido abierto correctamente\n");
+            return 1; 
         }
-        else
-            printf("Puerto abierto correctamente\n");
-            return 0;
 }
 
-void EnviarTrama(interface_t iface,unsigned char mac_src[6],unsigned char mac_dst[6],unsigned char type[2], unsigned char *car){
+void EnviarTrama(interface_t *iface,unsigned char car,unsigned char mac_src[6],unsigned char mac_dst[6],unsigned char type[2]){
+    unsigned char *carS = (unsigned char *) malloc (sizeof(unsigned char)); //caracter a enviar
     unsigned char *frame;
     __fpurge(stdin);
     
-    frame = BuildFrame(mac_src,mac_dst,type,car); //Construimos la trama
-    SendFrame(&iface,frame,1);
-    delete car;
-    free(frame);
+    carS[0] = car;
+    frame = BuildFrame(mac_src,mac_dst,type,carS); //Construimos la trama
+    SendFrame(iface,frame,1);
+    free(carS);
+    delete frame;
 }
 
-unsigned char RecibirCaracter(interface_t iface){
+unsigned char RecibirCaracter(interface_t *iface){
   
-   apacket_t trama ;
-    unsigned char dato ;
-    trama = ReceiveFrame (&iface);
+    apacket_t trama ;
+    trama = ReceiveFrame (iface);
 
-    if(trama.packet != NULL){
-
-    dato = trama.packet[14];
-
-
+    if(trama.packet != NULL && trama.packet[14] > 0){
+        return trama.packet[14];
     }else{
-
         return 0;
     }
 
-    return dato;
-
 }
 
+void Funcionalidad(interface_t *iface,unsigned char mac_src[6],unsigned char mac_dst[6],unsigned char type[2]){
+    //Abrimos el puerto para poder enviar la trama
+    if(OpenPort(iface) == 0){
 
+   
+            unsigned char car = 0;
+            printf("Pulse los caracteres a enviar: \n");
+            __fpurge;
+            while (car != 27)
+            {
+                
+                if (kbhit()) //Tecleando
+                {
+                    //Tecla capturada de teclado
+                    car = getch();
+
+                    //Si la tecla capturada NO es 'Esc' la enviamos
+                    if(car != 27){
+                        
+                        EnviarTrama(iface,car,mac_src,mac_dst,type);
+
+                    }
+                }else{//Esperando respuesta
+
+                        unsigned char carR = RecibirCaracter(iface);
+
+                        //Si lo que se recibe no es nulo
+                        if(carR != 0){
+
+                        //Imprimimos caracter
+                        printf("\nCaracter recibido: %c\n",carR);
+                    }
+                }
+                
+            }
+}
+
+}
 
 int main()
 {
@@ -156,25 +189,9 @@ dispositivo = seleccionarInterfaz( avail_ifaces);
 printf ("Interfaz elegida: %s\n", dispositivo);
 
 //Obtenemos la direccion MAC del dispositivo seleccionado
-conseguirMAC(iface, dispositivo);
+conseguirMAC(&iface, dispositivo);
 
-//Abrimos el puerto para poder enviar la trama
-OpenPort(iface);
-
-//Seleccionamos caracter a enviar
-unsigned char *car = new unsigned char();
-    cout<<"Seleccione un caracter: ";
-    cin>>car;
-
-//Enviamos la trama con [MAC_src y MAC_dst] como parametros ademas del caracter a enviar
-EnviarTrama(iface,mac_src,mac_dst,type,car);
-
-//Recibimos el caracter que nos han enviado
-char recibido = (char)RecibirCaracter(iface);
-printf("%c es el caracter recibido\n",recibido);
-
-//Imprimimos la MAC de la interfaz que pasamos por la parámetro
-imprimirMACR(iface.MACaddr);
-
+//Bucle infinito donde se realizan la captura y el envio de mensajes entre los usuarios de una misma red
+Funcionalidad(&iface,mac_src,mac_dst,type);
  return 0;
 }
